@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.se.MenuController"
+            style="-fx-background-color: linear-gradient(to bottom right, #667eea, #764ba2);">
+
+    <top>
+        <StackPane>
+            <Rectangle width="800" height="100" fill="rgba(255,255,255,0.1)" arcWidth="20" arcHeight="20"/>
+            <Label text="Sistema Escolar ITS"
+                   style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0.5, 2, 2);"
+                   BorderPane.alignment="CENTER">
+                <padding>
+                    <Insets top="20" bottom="20"/>
+                </padding>
+            </Label>
+        </StackPane>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="30">
+            <Label text="Seleccione un módulo"
+                   style="-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.3, 1, 1);"/>
+
+            <HBox spacing="30" alignment="CENTER">
+                <!-- Columna Izquierda -->
+                <VBox spacing="15" alignment="CENTER">
+                    <Button text="📚 Inscripciones" onAction="#abrirInscripciones"
+                            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-pref-width: 180px; -fx-pref-height: 60px;
+                                  -fx-background-color: linear-gradient(to bottom, #ff6b6b, #ee5a52); -fx-text-fill: white;
+                                  -fx-border-radius: 15px; -fx-background-radius: 15px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.3, 2, 2);"/>
+
+                    <Button text="👥 Personas" onAction="#abrirPersonas"
+                            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-pref-width: 180px; -fx-pref-height: 60px;
+                                  -fx-background-color: linear-gradient(to bottom, #48c78e, #3ec487); -fx-text-fill: white;
+                                  -fx-border-radius: 15px; -fx-background-radius: 15px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.3, 2, 2);"/>
+                </VBox>
+
+                <!-- Columna Derecha -->
+                <VBox spacing="15" alignment="CENTER">
+                    <Button text="✅ Asistencias" onAction="#abrirAsistencias"
+                            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-pref-width: 180px; -fx-pref-height: 60px;
+                                  -fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); -fx-text-fill: white;
+                                  -fx-border-radius: 15px; -fx-background-radius: 15px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.3, 2, 2);"/>
+
+                    <Button text="📖 Materias" onAction="#abrirMaterias"
+                            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-pref-width: 180px; -fx-pref-height: 60px;
+                                  -fx-background-color: linear-gradient(to bottom, #9b59b6, #8e44ad); -fx-text-fill: white;
+                                  -fx-border-radius: 15px; -fx-background-radius: 15px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.3, 2, 2);"/>
+                </VBox>
+            </HBox>
+
+            <!-- Efectos hover con CSS inline -->
+            <style>
+                .button:hover {
+                -fx-scale-x: 1.05;
+                -fx-scale-y: 1.05;
+                -fx-cursor: hand;
+                }
+                .button:pressed {
+                -fx-scale-x: 0.95;
+                -fx-scale-y: 0.95;
+                }
+            </style>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox alignment="CENTER" spacing="8"
+              style="-fx-background-color: rgba(0,0,0,0.2); -fx-padding: 15; -fx-border-color: rgba(255,255,255,0.3); -fx-border-width: 1 0 0 0;">
+            <Label text="🚀 Desarrollado por el Dream Team"
+                   style="-fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 14px;"/>
+            <HBox spacing="20" alignment="CENTER">
+                <Label text="David Cervantes Malfavon" style="-fx-text-fill: #e8f4f8; -fx-font-size: 12px;"/>
+                <Label text="•" style="-fx-text-fill: white;"/>
+                <Label text="Oziel David Canul Xool" style="-fx-text-fill: #e8f4f8; -fx-font-size: 12px;"/>
+                <Label text="•" style="-fx-text-fill: white;"/>
+                <Label text="Sergio David Foster Medina" style="-fx-text-fill: #e8f4f8; -fx-font-size: 12px;"/>
+                <Label text="•" style="-fx-text-fill: white;"/>
+                <Label text="Giovani Carballo Padilla" style="-fx-text-fill: #e8f4f8; -fx-font-size: 12px;"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>
