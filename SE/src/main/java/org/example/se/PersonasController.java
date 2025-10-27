@@ -1,25 +1,12 @@
 package org.example.se;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
-
-import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.SimpleTimeZone;
 
 public class PersonasController {
 
@@ -59,8 +46,10 @@ public class PersonasController {
     @FXML
     private MenuItem menuInsertar;
 
+    // ¡CAMBIO 1!
+    // En lugar de ComboBox<Rol>, ahora es ComboBox<Persona.Rol>
     @FXML
-    private ComboBox<Rol> rol;
+    private ComboBox<Persona.Rol> rol;
 
     @FXML
     private ComboBox<String> sexo;
@@ -86,6 +75,9 @@ public class PersonasController {
 
     @FXML
     void onInsertar(ActionEvent event) {
+
+        Connection conn = ConexionBD.getConnection();
+
         if (conn == null) {
             mostrarAlerta("Conexión", "Sin conexión a la BD");
             return;
@@ -93,34 +85,37 @@ public class PersonasController {
 
         String nombre = trim(txtNombre.getText());
         String apellido = trim(txtApellido.getText());
-        LocalDate nacimiento= fchNacimiento.getValue();
+        LocalDate nacimiento = fchNacimiento.getValue();
         String sexoUi = sexo.getValue();
-        Rol rolSel = rol.getValue();
+
+        Persona.Rol rolSel = rol.getValue();
 
         if (nombre.isEmpty() || apellido.isEmpty() || nacimiento == null || sexoUi == null || rolSel == null) {
             mostrarAlerta("Datos imcompletos", "Todos los campos son obligatorios");
             return;
         }
 
-        if (!confirm ("¿Insertar nuevo registro?"))
+        if (!confirm("¿Insertar nuevo registro?"))
             return;
 
         String sexoDb = uiToDb(sexoUi);
         String sql = "INSERT INTO personas_escuela(nombre, apellido, sexo, fh_nac, id_rol) VALUES (?, ?, ?, ?, ?)";
 
-        try(PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
-            st.setString(1,nombre);
+        try (PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            st.setString(1, nombre);
             st.setString(2, apellido);
             st.setString(3, sexoDb);
 
-            if(nacimiento != null) st.setDate(4, Date.valueOf(nacimiento));
+            if (nacimiento != null) st.setDate(4, Date.valueOf(nacimiento));
             else st.setNull(4, Types.DATE);
             st.setInt(5, rolSel.getId());
 
-            int n = st .executeUpdate();
+            int n = st.executeUpdate();
             if (n == 1) {
                 int newId = -1;
-                try (ResultSet k = st.getGeneratedKeys()) { if (k.next()) newId = k.getInt(1); }
+                try (ResultSet k = st.getGeneratedKeys()) {
+                    if (k.next()) newId = k.getInt(1);
+                }
                 cargarPersonas();
                 marcarDetallePorId(newId, "Persona insertada");
                 limpiar();
@@ -134,124 +129,12 @@ public class PersonasController {
         }
     }
 
-    private Connection conn;
-    private Session sshSession;
-
-    public PersonasController() {
-        tunelSSH();
-    }
-
-    private void tunelSSH() {
-        try {
-            String hostname = "fi.jcaguilar.dev";
-            String sshUser = "patito";
-            String sshPass = "cuack";
-            String dbUser = "becario";
-            String dbPass = "FdI-its-5a";
-
-            JSch jsch = new JSch();
-            sshSession = jsch.getSession(sshUser, hostname);
-            sshSession.setPassword(sshPass);
-            sshSession.setConfig("StrictHostKeyChecking", "no");
-
-            sshSession.connect();
-
-            int port = sshSession.setPortForwardingL(0, "localhost", 3306);
-            String conString = "jdbc:mariadb://localhost:" + port + "/its5a";
-
-            conn = DriverManager.getConnection(conString, dbUser, dbPass);
-
-            if (conn != null && !conn.isClosed()) {
-                System.out.println("Conexión exitosa a la base de datos");
-            }
-
-        } catch (JSchException | SQLException e) {
-            mostrarAlerta("Error de Conexión", "No se pudo conectar: " + e.getMessage());
-        }
-
-    }
-
     private void mostrarAlerta(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titulo);
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
-    }
-
-    public static class Rol {
-        private final int id;
-        private final String descripcion;
-
-        public Rol(int id, String descripcion) {
-            this.id = id;
-            this.descripcion = descripcion;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getDescripcion() {
-            return descripcion;
-        }
-
-        @Override
-        public String toString() {
-            return descripcion;
-        }
-    }
-
-    public static class Persona {
-        private final int id;
-        private final String nombre;
-        private final String apellido;
-        private final String sexo;
-        private final LocalDate fecha;
-        private final String rol;
-        private String detalles = "";
-
-        public Persona(int id, String nombre, String apellido, String sexo, LocalDate fecha, String rol) {
-            this.id = id;
-            this.nombre = nombre;
-            this.apellido = apellido;
-            this.sexo = sexo;
-            this.fecha = fecha;
-            this.rol = rol;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public String getApellido() {
-            return apellido;
-        }
-
-        public String getSexo() {
-            return sexo;
-        }
-
-        public LocalDate getFecha() {
-            return fecha;
-        }
-
-        public String getRol() {
-            return rol;
-        }
-
-        public String getDetalles() {
-            return detalles;
-        }
-
-        public void setDetalles(String detalles) {
-            this.detalles = detalles;
-        }
-
     }
 
     public void initialize() {
@@ -269,6 +152,9 @@ public class PersonasController {
     }
 
     private void cargarRoles() {
+
+        Connection conn = ConexionBD.getConnection();
+
         rol.getItems().clear();
         if (conn == null) {
             mostrarAlerta("Conexión", "Sin conexión a la base de datos.");
@@ -279,7 +165,7 @@ public class PersonasController {
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                rol.getItems().add(new Rol(rs.getInt("id_rol"), rs.getString("descripcion")));
+                rol.getItems().add(new Persona.Rol(rs.getInt("id_rol"), rs.getString("descripcion")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -288,6 +174,9 @@ public class PersonasController {
     }
 
     private void cargarPersonas() {
+
+        Connection conn = ConexionBD.getConnection();
+
         if (conn == null) {
             mostrarAlerta("Conexión", "Sin conexión a la base de datos.");
             return;
@@ -295,16 +184,17 @@ public class PersonasController {
 
         ObservableList<Persona> data = javafx.collections.FXCollections.observableArrayList();
         String sql = """
-        SELECT p.id_persona, p.nombre, p.apellido, p.sexo, p.fh_nac, r.descripcion AS rol
-        FROM personas_escuela p
-        JOIN roles r ON r.id_rol = p.id_rol
-        ORDER BY p.id_persona DESC
-        """;
+                SELECT p.id_persona, p.nombre, p.apellido, p.sexo, p.fh_nac, r.descripcion AS rol
+                FROM personas_escuela p
+                JOIN roles r ON r.id_rol = p.id_rol
+                ORDER BY p.id_persona DESC
+                """;
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 String sexoUi = dbToUi(rs.getString("sexo"));
                 LocalDate nac = rs.getDate("fh_nac") == null ? null : rs.getDate("fh_nac").toLocalDate();
+
                 data.add(new Persona(
                         rs.getInt("id_persona"),
                         rs.getString("nombre"),
@@ -320,45 +210,56 @@ public class PersonasController {
         }
     }
 
-    // Convierte el valor que viene de BD a lo que muestras en UI
+    // Convertir el valor que viene de la BD a lo que se muestra en UI
     private static String dbToUi(String db) {
         if (db == null) return "";
         switch (db.toLowerCase()) {
-            case "h": return "Hombre";
+            case "h":
+                return "Hombre";
             case "m":
-            case "f": return "Mujer";
-            case "o": return "Otro";
-            default:  return db;
+            case "f":
+                return "Mujer";
+            case "o":
+                return "Otro";
+            default:
+                return db;
         }
     }
 
-    // Convierte de lo que eliges en la UI a lo que guardas en BD
+    // Convertir lo que se selecciona en la UI a lo que se guarda en la BD
     private static String uiToDb(String ui) {
         if (ui == null) return null;
         switch (ui) {
-            case "Hombre": return "h";
-            case "Mujer":  return "m";
-            case "Otro":   return "o";
-            default:       return ui;
+            case "Hombre":
+                return "h";
+            case "Mujer":
+                return "m";
+            case "Otro":
+                return "o";
+            default:
+                return ui;
         }
     }
 
-    private static String trim(String s){
-        return s == null ? "": s.trim();
+    private static String trim(String s) {
+        return s == null ? "" : s.trim();
     }
 
-    private boolean confirm(String m){
+    //Confirmación Si o No para implementar la acción
+    private boolean confirm(String m) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION, m, ButtonType.YES, ButtonType.NO);
-        return a.showAndWait().filter(b -> b==ButtonType.YES).isPresent();
+        return a.showAndWait().filter(b -> b == ButtonType.YES).isPresent();
     }
 
-    private void info(String titulo, String msg){
+    //Crear unaa ventana para mostrar lo que se hizo
+    private void info(String titulo, String msg) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText(titulo);
         a.setContentText(msg);
         a.showAndWait();
     }
 
+    //Limmpiar los campos
     private void limpiar() {
         txtNombre.clear();
         txtApellido.clear();
@@ -366,22 +267,15 @@ public class PersonasController {
         txtNombre.requestFocus();
     }
 
-    public void cerrarConexion() {
-        try { if (conn != null && !conn.isClosed()) conn.close();
-        } catch (SQLException ignored) {}
-        if (sshSession != null && sshSession.isConnected()) sshSession.disconnect();
-        sshSession = null;
-    }
-
-    /** Busca la fila por id en la tabla, escribe el texto en la columna Detalles,
-     *  selecciona y hace scroll a esa fila. */
+    // Muestra lo que se le hizo a la persona
     private void marcarDetallePorId(int id, String texto) {
         if (id <= 0) return; // por si no vino el id generado
         for (int i = 0; i < tblPersonas.getItems().size(); i++) {
             Persona p = tblPersonas.getItems().get(i);
             if (p.getId() == id) {
+
                 p.setDetalles(texto);
-                tblPersonas.getItems().set(i, p);
+
                 tblPersonas.refresh();
                 tblPersonas.getSelectionModel().select(i);
                 tblPersonas.scrollTo(i);
@@ -391,5 +285,4 @@ public class PersonasController {
     }
 
 }
-
 

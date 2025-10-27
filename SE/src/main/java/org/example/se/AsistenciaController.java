@@ -12,9 +12,7 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.cell.PropertyValueFactory;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -45,43 +43,8 @@ public class AsistenciaController {
     @FXML
     private MenuItem menuEliminar;
 
-    private Connection conn;
-    private Session sshSession;
     private ObservableList<Asistencia> todosLosDatos;
     private FilteredList<Asistencia> datosFiltrados;
-
-    public AsistenciaController() {
-        establecerConexionSSH();
-    }
-
-    private void establecerConexionSSH() {
-        try {
-            String hostname = "fi.jcaguilar.dev";
-            String sshUser = "patito";
-            String sshPass = "cuack";
-            String dbUser = "becario";
-            String dbPass = "FdI-its-5a";
-
-            JSch jsch = new JSch();
-            sshSession = jsch.getSession(sshUser, hostname);
-            sshSession.setPassword(sshPass);
-            sshSession.setConfig("StrictHostKeyChecking", "no");
-
-            sshSession.connect();
-
-            int port = sshSession.setPortForwardingL(0, "localhost", 3306);
-            String conString = "jdbc:mariadb://localhost:" + port + "/its5a";
-
-            conn = DriverManager.getConnection(conString, dbUser, dbPass);
-
-            if (conn != null && !conn.isClosed()) {
-                System.out.println("Conexión exitosa a la base de datos");
-            }
-
-        } catch (JSchException | SQLException e) {
-            mostrarAlerta("Error de Conexión", "No se pudo conectar: " + e.getMessage());
-        }
-    }
 
     @FXML
     public void initialize() {
@@ -92,6 +55,7 @@ public class AsistenciaController {
         // Fecha por defecto: hoy
         dpFecha.setValue(LocalDate.now());
 
+        Connection conn = ConexionBD.getConnection();
         if (conn != null) {
             cargarDatos();
             cargarComboMaterias();
@@ -105,6 +69,13 @@ public class AsistenciaController {
     }
 
     public void cargarDatos() {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return;
+        }
+
         todosLosDatos = FXCollections.observableArrayList();
 
         String query = "SELECT " +
@@ -159,6 +130,13 @@ public class AsistenciaController {
     }
 
     private void cargarComboMaterias() {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return;
+        }
+
         ObservableList<String> materiasList = FXCollections.observableArrayList();
 
         // Agregar opción vacía para mostrar todos
@@ -181,6 +159,13 @@ public class AsistenciaController {
     }
 
     private void cargarPersonasPorMateria() {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return;
+        }
+
         String materiaSeleccionada = comboMateria.getSelectionModel().getSelectedItem();
 
         if (materiaSeleccionada == null || materiaSeleccionada.isEmpty()) {
@@ -222,6 +207,13 @@ public class AsistenciaController {
 
     @FXML
     private void agregarAsistencia() {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return;
+        }
+
         String nombrePersona = comboPersona.getSelectionModel().getSelectedItem();
         String nombreMateria = comboMateria.getSelectionModel().getSelectedItem();
         LocalDate fecha = dpFecha.getValue();
@@ -288,6 +280,13 @@ public class AsistenciaController {
 
     @FXML
     private void eliminarAsistencia() {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return;
+        }
+
         String nombrePersona = comboPersona.getSelectionModel().getSelectedItem();
         String nombreMateria = comboMateria.getSelectionModel().getSelectedItem();
         LocalDate fecha = dpFecha.getValue();
@@ -352,6 +351,13 @@ public class AsistenciaController {
     // se mantienen igual que en la versión anterior...
 
     private String obtenerIdPersonaPorNombre(String nombre) {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return null;
+        }
+
         String query = "SELECT id_persona FROM personas_escuela WHERE nombre = ? LIMIT 1";
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -372,6 +378,13 @@ public class AsistenciaController {
     }
 
     private String obtenerIdMateriaPorDescripcion(String descripcion) {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return null;
+        }
+
         String query = "SELECT id_materia FROM materias WHERE descripcion = ? LIMIT 1";
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -392,6 +405,13 @@ public class AsistenciaController {
     }
 
     private String obtenerIdInscripcion(String idPersona, String idMateria) {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return null;
+        }
+
         String query = "SELECT id_inscripcion FROM inscripciones WHERE id_estudiante = ? AND id_materia = ? LIMIT 1";
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -413,6 +433,13 @@ public class AsistenciaController {
     }
 
     private boolean existeRegistro(String idInscripcion, LocalDate fecha) {
+
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error", "No se pudieron cargar datos, no hay conexión con la BD.");
+            return false;
+        }
+
         String query = "SELECT COUNT(*) as count FROM asistencias WHERE id_inscripcion = ? AND fecha = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -444,18 +471,4 @@ public class AsistenciaController {
         alert.showAndWait();
     }
 
-    public void cerrarConexion() {
-        try {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-                System.out.println("Conexión a BD cerrada.");
-            }
-            if (sshSession != null && sshSession.isConnected()) {
-                sshSession.disconnect();
-                System.out.println("Sesión SSH cerrada.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 }
