@@ -1,12 +1,12 @@
-# === Ignorar Sistema Operativo (macOS) ===
+# Ignorar Sistema Operativo (macOS)
 .DS_Store
 *.DS_Store
 
-# === Ignorar Build de Java (Maven/Gradle) ===
+# Ignorar Build de Java (Maven/Gradle) 
 /target/
 SE/target/
 
-# === Ignorar IDE (IntelliJ) ===
+# Ignorar IDE (IntelliJ)
 *.iml
 /.idea/
 
