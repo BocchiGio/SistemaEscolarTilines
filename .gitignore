@@ -1,0 +1,16 @@
+# Ignorar Sistema Operativo (macOS)
+.DS_Store
+*.DS_Store
+
+# Ignorar Build de Java (Maven/Gradle) 
+/target/
+SE/target/
+
+# Ignorar IDE (IntelliJ)
+*.iml
+/.idea/
+
+# Otros archivos de configuración de IntelliJ
+shelf/
+/workspace.xml
+/httpRequests/
