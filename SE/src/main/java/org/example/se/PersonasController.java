@@ -46,8 +46,6 @@ public class PersonasController {
     @FXML
     private MenuItem menuInsertar;
 
-    // ¡CAMBIO 1!
-    // En lugar de ComboBox<Rol>, ahora es ComboBox<Persona.Rol>
     @FXML
     private ComboBox<Persona.Rol> rol;
 
@@ -65,12 +63,12 @@ public class PersonasController {
 
     @FXML
     void onEditar(ActionEvent event) {
-
+        //Falta implementar
     }
 
     @FXML
     void onEliminar(ActionEvent event) {
-
+        //Falta implementar
     }
 
     @FXML
