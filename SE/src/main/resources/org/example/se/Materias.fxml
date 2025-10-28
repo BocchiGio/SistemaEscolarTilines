@@ -1,14 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="CONTROLLER_NAME"
-            prefHeight="400.0" prefWidth="600.0">
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.se.MateriaController">
+    <top>
+        <ToolBar>
+            <TextField fx:id="txtBuscar" promptText="Buscar descripción..." HBox.hgrow="ALWAYS" onKeyReleased="#onBuscarChanged"/>
+            <ComboBox fx:id="cbSemestre" promptText="Semestre" prefWidth="140" onAction="#onFiltroSemestre"/>
+            <Spinner fx:id="spMinCreditos" editable="true"/>
+            <Separator orientation="VERTICAL"/>
+            <Button fx:id="btnNuevo" text="Nuevo" onAction="#onNuevo"/>
+            <Button fx:id="btnEditar" text="Editar" onAction="#onEditar" disable="true"/>
+            <Button fx:id="btnEliminar" text="Eliminar" onAction="#onEliminar" disable="true"/>
+            <Button fx:id="btnRefrescar" text="Refrescar" onAction="#onRefrescar"/>
+        </ToolBar>
+    </top>
 
-</AnchorPane>
+    <center>
+        <TabPane fx:id="tabPane">
+            <tabs>
+                <Tab text="Listado">
+                    <content>
+                        <SplitPane dividerPositions="0.68">
+                            <items>
+                                <TableView fx:id="tblMaterias">
+                                    <columns>
+                                        <TableColumn fx:id="colId" text="ID" prefWidth="70"/>
+                                        <TableColumn fx:id="colDescripcion" text="Descripción"/>
+                                        <TableColumn fx:id="colSemestre" text="Sem" prefWidth="70"/>
+                                        <TableColumn fx:id="colCreditos" text="Créditos" prefWidth="80"/>
+                                        <TableColumn fx:id="colCreated" text="Creado" prefWidth="160"/>
+                                        <TableColumn fx:id="colUpdated" text="Actualizado" prefWidth="160"/>
+                                    </columns>
+                                </TableView>
+
+                                <TitledPane text="Detalle de materia" expanded="true">
+                                    <content>
+                                        <VBox spacing="8">
+                                            <Label text="Descripción"/>
+                                            <TextField fx:id="txtDescripcion" promptText="Nombre de la materia"/>
+
+                                            <Label text="Semestre"/>
+                                            <Spinner fx:id="spSemestre" editable="true"/>
+
+                                            <Label text="Créditos"/>
+                                            <Spinner fx:id="spCreditos" editable="true"/>
+
+                                            <HBox spacing="8">
+                                                <Button fx:id="btnGuardar" text="Guardar" onAction="#onGuardar" defaultButton="true"/>
+                                                <Button fx:id="btnCancelar" text="Cancelar" onAction="#onCancelar" cancelButton="true"/>
+                                            </HBox>
+
+                                            <Separator/>
+                                            <GridPane hgap="8" vgap="6">
+                                                <columnConstraints>
+                                                    <ColumnConstraints percentWidth="30"/>
+                                                    <ColumnConstraints percentWidth="70"/>
+                                                </columnConstraints>
+                                                <Label text="Creado:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                                <Label fx:id="lblCreated" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                                <Label text="Actualizado:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                                <Label fx:id="lblUpdated" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                            </GridPane>
+                                        </VBox>
+                                    </content>
+                                </TitledPane>
+                            </items>
+                        </SplitPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <HBox spacing="12">
+            <Label fx:id="lblStatus" text="Listo"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Pagination fx:id="pagination" visible="false"/>
+        </HBox>
+    </bottom>
+</BorderPane>
