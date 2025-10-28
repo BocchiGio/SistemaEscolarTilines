@@ -39,7 +39,7 @@ public class InscripcionController {
     @FXML
     private ComboBox<String> comboSemestre;
     @FXML
-    private TextField txtAlumnoBusqueda; // Ahora: nombre del alumno
+    private TextField txtAlumnoBusqueda; 
     @FXML
     private DatePicker dpFechaInscripcion;
 
