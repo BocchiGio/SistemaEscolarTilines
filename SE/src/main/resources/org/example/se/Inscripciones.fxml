@@ -17,7 +17,7 @@
     <top>
         <ToolBar style="-fx-background-color: #2c3e50; -fx-padding: 10;">
             <items>
-                <Label style="-fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 0 5 0 0;" text="Alumno/ID:" />
+                <Label style="-fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 0 5 0 0;" text="Alumno:" />
                 <TextField fx:id="txtAlumnoBusqueda" promptText="Buscar o Escribir ID" />
 
                 <Label style="-fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 0 5 0 15;" text="Materia Inscrita:" />
@@ -26,7 +26,7 @@
                 <Label style="-fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 0 5 0 15;" text="Fecha:" />
                 <DatePicker fx:id="dpFechaInscripcion" promptText="Fecha de Inscripción" />
 
-                <MenuButton fx:id="menuAcciones" style="-fx-background-color: #ff6b6b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-margin: 0 0 0 20;" text="Matrícula">
+                <MenuButton fx:id="menuAcciones" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-margin: 0 0 0 20;" text="Matrícula">
                     <items>
                         <MenuItem fx:id="menuAgregar" onAction="#registrarInscripcion" text="Registrar Inscripción" />
                         <MenuItem fx:id="menuEliminar" onAction="#darDeBaja" text="Dar de Baja" />
