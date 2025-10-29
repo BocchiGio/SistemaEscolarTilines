@@ -6,8 +6,8 @@ Integrantes:
 
 David Cervantes Malfavon - Asistencia
 
-Cristian Carballo Padilla - Inscripcion
+Cristian Carballo Padilla - Personas
 
-Sergio Foster Medina - Materias
+Sergio Foster Medina - Inscripciones
 
-Fernando Sabido Quijano - Personas
+Fernando Sabido Quijano - Materias
