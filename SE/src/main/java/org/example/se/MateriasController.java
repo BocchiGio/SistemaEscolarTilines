@@ -1,176 +1,224 @@
 package org.example.se;
 
-import javafx.collections.transformation.FilteredList;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.util.StringConverter;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+import java.sql.*;
+import java.util.Optional;
 
 public class MateriasController {
 
-    // Controles de la interfaz (FXML)
-    @FXML private TextField txtBuscar;
-    @FXML private ComboBox<Integer> cbSemestre;
-    @FXML private Spinner<Integer> spMinCreditos;
-    @FXML private Button btnNuevo, btnEditar, btnEliminar, btnRefrescar;
-
-    // Tabla de Materias
-    @FXML private TableView<Materia> tblMaterias;
-    @FXML private TableColumn<Materia, Integer> colId, colSemestre, colCreditos;
-    @FXML private TableColumn<Materia, String> colDescripcion, colCreated, colUpdated;
-
-    // Controles para el detalle de la materia
-    @FXML private TextField txtDescripcion;
-    @FXML private Spinner<Integer> spSemestre, spCreditos;
-    @FXML private Label lblCreated, lblUpdated;
-    @FXML private Button btnGuardar, btnCancelar;
-
-    // Información de estado
-    @FXML private Label lblStatus;
-    @FXML private Pagination pagination;
-
-    // Repositorio en memoria (simula la base de datos)
-    private final InMemoryMateriaRepo repo = new InMemoryMateriaRepo();
-    private FilteredList<Materia> filtered;
+    @FXML
+    private TextField txtMateria;
 
     @FXML
-    private void initialize() {
-        // Configuración de los spinners (semestre y créditos)
-        setupSpinner(spSemestre, 1, 12, 1);
-        setupSpinner(spCreditos, 0, 20, 4);
-        setupSpinner(spMinCreditos, 0, 20, 0);
+    private Spinner<Integer> creditos;
 
-        // Configuración del ComboBox para los semestres
-        cbSemestre.getItems().add(null);  // Agrega la opción "Todos"
-        for (int i = 1; i <= 12; i++) {
-            cbSemestre.getItems().add(i);
-        }
-        cbSemestre.setConverter(new StringConverter<Integer>() {
-            @Override
-            public String toString(Integer v) {
-                return v == null ? "Todos" : String.valueOf(v);
-            }
-
-            @Override
-            public Integer fromString(String s) {
-                return null;
-            }
-        });
-        cbSemestre.getSelectionModel().selectFirst();
-
-        // Configuración de la tabla de materias
-        colId.setCellValueFactory(c -> c.getValue().idMateriaProperty().asObject());
-        colDescripcion.setCellValueFactory(c -> c.getValue().descripcionProperty());
-        colSemestre.setCellValueFactory(c -> c.getValue().semestreProperty().asObject());
-        colCreditos.setCellValueFactory(c -> c.getValue().creditosProperty().asObject());
-        colCreated.setCellValueFactory(c -> c.getValue().createdAtProperty());
-        colUpdated.setCellValueFactory(c -> c.getValue().updatedAtProperty());
-
-        // Filtrado de la lista de materias
-        filtered = new FilteredList<>(repo.list(), m -> true);
-        tblMaterias.setItems(filtered);
-
-        tblMaterias.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> {
-            boolean has = b != null;
-            btnEditar.setDisable(!has);
-            btnEliminar.setDisable(!has);
-            if (has) bindForm(b);
-        });
-
-        lblStatus.setText("Listo");
-    }
-
-    // Configuración de los spinners
-    private void setupSpinner(Spinner<Integer> sp, int min, int max, int val) {
-        sp.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(min, max, val, 1));
-        sp.setEditable(true);
-    }
-
-    // Vincula los datos de la materia seleccionada al formulario de detalle
-    private void bindForm(Materia m) {
-        txtDescripcion.setText(m.getDescripcion());
-        spSemestre.getValueFactory().setValue(m.getSemestre());
-        spCreditos.getValueFactory().setValue(m.getCreditos());
-        lblCreated.setText(m.getCreatedAt());
-        lblUpdated.setText(m.getUpdatedAt());
-    }
-
-    // Limpia el formulario de detalle
-    private void clearForm() {
-        txtDescripcion.clear();
-        spSemestre.getValueFactory().setValue(1);
-        spCreditos.getValueFactory().setValue(0);
-        lblCreated.setText("");
-        lblUpdated.setText("");
-    }
-
-    // Acciones de los botones en la parte superior
     @FXML
-    private void onNuevo() {
-        clearForm();
+    private ComboBox<Integer> semestre;
+
+    @FXML
+    private MenuButton btnAcciones;
+
+    @FXML
+    private MenuItem menuEditar;
+
+    @FXML
+    private MenuItem menuEliminar;
+
+    @FXML
+    private MenuItem menuInsertar;
+
+    @FXML
+    private TableView<Materia> tblMaterias;
+
+    @FXML
+    private TableColumn<Materia, Integer> colId;
+
+    @FXML
+    private TableColumn<Materia, String> colMateria;
+
+    @FXML
+    private TableColumn<Materia, Integer> colSemestre;
+
+    @FXML
+    private TableColumn<Materia, Integer> colCreditos;
+
+    @FXML
+    private TableColumn<Materia, String> colDetalles;
+
+    private ObservableList<Materia> listaMaterias = FXCollections.observableArrayList();
+
+    @FXML
+    public void initialize() {
+        colId.setCellValueFactory(new PropertyValueFactory<>("idMateria"));
+        colMateria.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+        colSemestre.setCellValueFactory(new PropertyValueFactory<>("semestre"));
+        colCreditos.setCellValueFactory(new PropertyValueFactory<>("creditos"));
+        colDetalles.setCellValueFactory(new PropertyValueFactory<>("detalles"));
+
+        tblMaterias.setItems(listaMaterias);
+        SpinnerValueFactory<Integer> creditosFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory
+                (0, 10, 0);
+        this.creditos.setValueFactory(creditosFactory);
+        this.creditos.setEditable(true); // Permite escribir el número
+
+        this.semestre.setPromptText("Semestre");
+        this.semestre.getItems().addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+
+        cargarDatosDeLaBD();
     }
 
     @FXML
-    private void onEditar() {
-        // Implementar la lógica para editar una materia (si es necesario)
-    }
-
-    @FXML
-    private void onEliminar() {
-        Materia selected = tblMaterias.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-        repo.delete(selected);
-        lblStatus.setText("Eliminado id " + selected.getIdMateria());
-    }
-
-    @FXML
-    private void onRefrescar() {
-        tblMaterias.refresh();
-        lblStatus.setText("Refrescado");
-    }
-
-    // Guardar/Cancelar (en el detalle)
-    @FXML
-    private void onGuardar() {
-        String descripcion = txtDescripcion.getText() == null ? "" : txtDescripcion.getText().trim();
-        Integer semestre = spSemestre.getValue();
-        Integer creditos = spCreditos.getValue();
-        if (descripcion.isEmpty()) {
-            lblStatus.setText("Descripción requerida");
+    void onInsertar(ActionEvent event) {
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) {
+            mostrarAlerta("Error de Conexión", "No se pudo conectar a la base de datos.");
             return;
         }
-        Materia m = repo.add(descripcion, semestre, creditos);
-        tblMaterias.getSelectionModel().select(m);
-        lblStatus.setText("Guardado id " + m.getIdMateria());
+
+        String descripcion = trim(txtMateria.getText());
+        Integer sem = semestre.getValue();
+
+        // Validar que los datos no estén vacíos
+        String mensajeError = "";
+
+        if (descripcion.isEmpty()) {
+            mensajeError += "Debe introducir una 'Materia'.\n";
+            txtMateria.requestFocus();
+        }
+        if (sem == null) {
+            mensajeError += "Debe seleccionar un 'Semestre'.\n";
+        }
+
+        // Si hay cualquier error
+        if (!mensajeError.isEmpty()) {
+            mostrarAlerta("Datos incompletos", mensajeError);
+            return;
+        }
+
+        Integer cred = creditos.getValue();
+
+        if (!confirm("¿Está seguro de que desea CREAR la nueva materia: '" + descripcion + "'?")) {
+            return;
+        }
+
+        String sql = "INSERT INTO materias (descripcion, semestre, creditos) VALUES (?, ?, ?)";
+
+        try (PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            st.setString(1, descripcion);
+            st.setInt(2, sem);
+            st.setInt(3, cred);
+
+            int filasAfectadas = st.executeUpdate();
+
+            if (filasAfectadas > 0) {
+                int newId = -1;
+                try (ResultSet k = st.getGeneratedKeys()) {
+                    if (k.next()) newId = k.getInt(1);
+                }
+
+                info("Éxito", "Materia '" + descripcion + "' creada correctamente.");
+
+                // Actualizar la tabla y limpia los campos
+                cargarDatosDeLaBD();
+                marcarDetallePorId(newId, "Materia Insertada");
+                limpiar();
+            } else {
+                mostrarAlerta("Error", "No se pudo insertar la materia.");
+            }
+
+        } catch (SQLException e) {
+            mostrarAlerta("Error de SQL (Insert)", "No se pudo guardar la materia: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
-    private void onCancelar() {
-        clearForm();
-        lblStatus.setText("Cancelado");
-    }
-
-    // Filtros
-    @FXML
-    private void onBuscarChanged() {
-        applyFilters();
+    void onEditar(ActionEvent event) {
+        // Falta implementar
     }
 
     @FXML
-    private void onFiltroSemestre() {
-        applyFilters();
+    void onEliminar(ActionEvent event) {
+        // Falta implementar
     }
 
-    // Aplicación de los filtros (por búsqueda y semestre)
-    private void applyFilters() {
-        String query = txtBuscar.getText() == null ? "" : txtBuscar.getText().toLowerCase().trim();
-        Integer semestre = cbSemestre.getValue();
-        Integer minCreditos = spMinCreditos.getValue();
+    private void cargarDatosDeLaBD() {
+        Connection conn = ConexionBD.getConnection();
+        if (conn == null) return;
 
-        filtered.setPredicate(m -> {
-            boolean matchesQuery = query.isEmpty() || m.getDescripcion().toLowerCase().contains(query);
-            boolean matchesSemestre = semestre == null || m.getSemestre() == semestre;
-            boolean matchesCreditos = minCreditos == null || m.getCreditos() >= minCreditos;
-            return matchesQuery && matchesSemestre && matchesCreditos;
-        });
+        listaMaterias.clear();
+
+        String sql = "SELECT id_materia, descripcion, semestre, creditos FROM materias ORDER BY id_materia DESC";
+
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                listaMaterias.add(new Materia(
+                        rs.getInt("id_materia"),
+                        rs.getString("descripcion"),
+                        rs.getInt("semestre"),
+                        rs.getInt("creditos")
+                ));
+            }
+        } catch (SQLException e) {
+            mostrarAlerta("Error de SQL", "Error al cargar las materias: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void limpiar() {
+        txtMateria.clear();
+        semestre.getSelectionModel().selectFirst();
+        creditos.getValueFactory().setValue(0);
+        txtMateria.requestFocus();
+    }
+
+    private void marcarDetallePorId(int id, String texto) {
+        if (id <= 0) return; // No se pudo obtener el ID
+
+        for (Materia m : listaMaterias) {
+            if (m.getIdMateria() == id) {
+                m.setDetalles(texto);
+                tblMaterias.refresh();
+
+                // Selecciona y enfoca la nueva fila
+                tblMaterias.getSelectionModel().select(m);
+                tblMaterias.scrollTo(m);
+                break;
+            }
+        }
+    }
+
+    private static String trim(String s) {
+        return (s == null) ? "" : s.trim();
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+
+    private void info(String titulo, String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setHeaderText(titulo);
+        a.setContentText(msg);
+        a.showAndWait();
+    }
+
+    private boolean confirm(String m) {
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION, m, ButtonType.YES, ButtonType.NO);
+        Optional<ButtonType> result = a.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.YES;
     }
 }
